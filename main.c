@@ -101,6 +101,39 @@ void bouncePhysicsObjectWithDecay(PhysicsObject* physobj, Vector3 direction, flo
 	physobj->direction = multiplyVectors(physobj->direction, direction);
 }
 
+void renderRoom(int dimensions)
+{
+	Vector3 points[8] =
+	{
+	};
+	/*
+	++ | +-
+	+- | --
+	-- | -+
+	-+ | ++
+	*/
+	DrawPlane((Vector3){0, -0.25, 0}, (Vector2){dimensions * 2, dimensions * 2}, (Color){25, 75, 25, 125});
+	{
+		DrawLine3D((Vector3){+dimensions, 0, +dimensions}, (Vector3){+dimensions, dimensions, +dimensions}, WHITE);
+		DrawLine3D((Vector3){-dimensions, 0, +dimensions}, (Vector3){-dimensions, dimensions, +dimensions}, WHITE);
+		DrawLine3D((Vector3){+dimensions, 0, -dimensions}, (Vector3){+dimensions, dimensions, -dimensions}, WHITE);
+		DrawLine3D((Vector3){-dimensions, 0, -dimensions}, (Vector3){-dimensions, dimensions, -dimensions}, WHITE);
+	}
+
+		DrawLine3D((Vector3){-dimensions, 0, -dimensions}, (Vector3){+dimensions, dimensions, -dimensions}, BLUE);
+		DrawLine3D((Vector3){+dimensions, 0, -dimensions}, (Vector3){-dimensions, dimensions, -dimensions}, BLUE);
+
+		DrawLine3D((Vector3){-dimensions, 0, +dimensions}, (Vector3){-dimensions, dimensions, -dimensions}, GREEN);
+		DrawLine3D((Vector3){-dimensions, 0, -dimensions}, (Vector3){-dimensions, dimensions, +dimensions}, GREEN);
+
+		DrawLine3D((Vector3){+dimensions, 0, +dimensions}, (Vector3){+dimensions, dimensions, -dimensions}, RED);
+		DrawLine3D((Vector3){+dimensions, 0, -dimensions}, (Vector3){+dimensions, dimensions, +dimensions}, RED);
+
+		DrawLine3D((Vector3){-dimensions, 0, +dimensions}, (Vector3){+dimensions, dimensions, +dimensions}, ORANGE);
+		DrawLine3D((Vector3){+dimensions, 0, +dimensions}, (Vector3){-dimensions, dimensions, +dimensions}, ORANGE);
+
+}
+
 int main()
 {
 	const int screenWidth = 600;
@@ -119,19 +152,28 @@ int main()
 
 	SetTargetFPS(60);
 
-	PhysicsObject test_obj = newPhysicsObject((Vector3){0, 0, 0}, (Vector3){1, 4, 1});
+	PhysicsObject test_obj = newPhysicsObject((Vector3){0, 0, 0}, (Vector3){3, 4, 5});
+
+	float bounce_boundary = 500.f;
+	float bounce_boundary_change = 10.f;
 
 	while (!WindowShouldClose())
 	{
-		UpdateCamera(&camera);
 		BeginDrawing();
 
-			ClearBackground(BLUE);
+			ClearBackground(BLACK);
 
 			BeginMode3D(camera);
 			{
-				#define BOUNCE_BOUNDARY 500.f
-				DrawPlane((Vector3){0, -0.25, 0}, (Vector2){BOUNCE_BOUNDARY * 2, BOUNCE_BOUNDARY * 2}, (Color){125, 75, 25, 125});
+
+				// if(bounce_boundary < 10 || bounce_boundary > 1000)
+				// {
+				// 	bounce_boundary_change = (-bounce_boundary_change);
+				// }
+				// bounce_boundary += bounce_boundary_change;
+
+				renderRoom(bounce_boundary);
+
 				renderPhysObjPosition(&test_obj);
 				renderPhysObjLineFromZZZ(&test_obj);
 				renderPhysObjGroundAlignedMarker(&test_obj);
@@ -145,16 +187,25 @@ int main()
 				{
 					bouncePhysicsObject(&test_obj, (Vector3){1, -1, 1});
 				}
-				if(test_obj.position.x < -BOUNCE_BOUNDARY || test_obj.position.x > BOUNCE_BOUNDARY)
+				if(test_obj.position.x < -bounce_boundary || test_obj.position.x > bounce_boundary)
 				{
 					bouncePhysicsObject(&test_obj, (Vector3){-1, 1, 1});
 				}
-				if(test_obj.position.z < -BOUNCE_BOUNDARY || test_obj.position.z > BOUNCE_BOUNDARY)
+				if(test_obj.position.z < -bounce_boundary || test_obj.position.z > bounce_boundary)
 				{
 					bouncePhysicsObject(&test_obj, (Vector3){1, 1, -1});
 				}
 				// DrawGrid(1000, 1);
 				camera.target = test_obj.position;
+				if(IsKeyDown(KEY_LEFT_SHIFT))
+				{
+					UpdateCamera(&camera);
+					camera.position = addVectors(test_obj.position, (Vector3){25, 25, 25});
+				}
+				else
+				{
+					camera.position = (Vector3){500, 500, 500};
+				}
 			}
 			EndMode3D();
 
