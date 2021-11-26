@@ -66,9 +66,9 @@ PhysicsObject newPhysicsObject(Vector3 pos, Vector3 direction)
 	return (PhysicsObject){pos, direction, new_physobj_id, 0.5};
 }
 
-PhysicsObject allocateNewPhysicsObject(Vector3 pos, Vector3 direction)
-{
-}
+// PhysicsObject allocateNewPhysicsObject(Vector3 pos, Vector3 direction)
+// {
+// }
 
 float subtractPercentageFromNumber(float number, float percent)
 {
@@ -103,9 +103,9 @@ void bouncePhysicsObjectWithDecay(PhysicsObject* physobj, Vector3 direction, flo
 
 void renderRoom(int dimensions)
 {
-	Vector3 points[8] =
-	{
-	};
+	// Vector3 points[8] =
+	// {
+	// };
 	/*
 	++ | +-
 	+- | --
@@ -134,6 +134,37 @@ void renderRoom(int dimensions)
 
 }
 
+#include <stdint.h>
+
+#include <stdlib.h>
+
+#include <string.h>
+
+typedef struct ChirpSegment
+{
+	uint16_t frequency;
+	uint16_t length;
+}
+ChirpSegment;
+
+AudioStream* getAudioStream()
+{
+	static AudioStream audio_stream;
+	return &audio_stream;
+}
+
+void initAudioSystem()
+{
+	InitAudioDevice();
+	(*getAudioStream()) = InitAudioStream(44100, 16, 1);
+}
+#define MAX_SAMPLES 512
+#define MAX_SAMPLES_PER_UPDATE 4096
+void playChirp(ChirpSegment* chirp)
+{
+	_beep(chirp->frequency, chirp->length);
+}
+
 int main()
 {
 	const int screenWidth = 600;
@@ -155,7 +186,7 @@ int main()
 	PhysicsObject test_obj = newPhysicsObject((Vector3){0, 0, 0}, (Vector3){3, 4, 5});
 
 	float bounce_boundary = 500.f;
-	float bounce_boundary_change = 10.f;
+	// float bounce_boundary_change = 10.f;
 
 	while (!WindowShouldClose())
 	{
@@ -185,6 +216,8 @@ int main()
 				updatePhysicsObjectWeight(&test_obj);
 				if(test_obj.position.y < 0.f)
 				{
+					ChirpSegment test_chirp = (ChirpSegment){600, 10};
+					playChirp(&test_chirp);
 					bouncePhysicsObject(&test_obj, (Vector3){1, -1, 1});
 				}
 				if(test_obj.position.x < -bounce_boundary || test_obj.position.x > bounce_boundary)
