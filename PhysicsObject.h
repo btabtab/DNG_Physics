@@ -6,167 +6,9 @@
 
 #include <math.h>
 
-Vector3 scaleVector(Vector3 vec, float scale)
-{
-	return (Vector3){vec.x * scale, vec.y * scale, vec.z * scale};
-}
-
-Vector2 rotatePointVector2(Vector2 center, float angle, float base_x, float base_y)
-{
-	Vector2 point = (Vector2){base_x, base_y};
-	float s = sin(angle);
-	float c = cos(angle);
-
-	float temp_x = (point.x), temp_y = (point.y);
-
-	// translate point back to origin:
-	temp_x -= center.x;
-	temp_y -= center.y;
-
-	// rotate point
-	float xnew = temp_x * c - temp_y * s;
-	float ynew = temp_x * s + temp_y * c;
-
-	// translate point back:
-	(point.x) = xnew + center.x;
-	(point.y) = ynew + center.y;
-	return point;
-}
-
-Vector2 rotate2PointVector3(float center_x, float center_y, float angle, float base_x, float base_y)
-{
-	Vector2 point = (Vector2){base_x, base_y};
-	float s = sin(angle);
-	float c = cos(angle);
-
-	float temp_x = (point.x), temp_y = (point.y);
-
-	// translate point back to origin:
-	temp_x -= center_x;
-	temp_y -= center_y;
-
-	// rotate point
-	float xnew = temp_x * c - temp_y * s;
-	float ynew = temp_x * s + temp_y * c;
-
-	// translate point back:
-	(point.x) = xnew + center_x;
-	(point.y) = ynew + center_y;
-	return point;
-}
-
-//roll pitch yaw
-Vector3 rotate3DPoint(Vector3 center, Vector3 point, Vector3 rotation)
-{
-    float cosa = cos(rotation.y);
-    float sina = sin(rotation.y);
-
-    float cosb = cos(rotation.x);
-    float sinb = sin(rotation.x);
-
-    float cosc = cos(rotation.z);
-    float sinc = sin(rotation.z);
-
-    float Axx = cosa*cosb;
-    float Axy = cosa*sinb*sinc - sina*cosc;
-    float Axz = cosa*sinb*cosc + sina*sinc;
-
-    float Ayx = sina*cosb;
-    float Ayy = sina*sinb*sinc + cosa*cosc;
-    float Ayz = sina*sinb*cosc - cosa*sinc;
-
-    float Azx = -sinb;
-    float Azy = cosb*sinc;
-    float Azz = cosb*cosc;
-
-	Vector3 ret;
-
-    float px = point.x - center.x;
-    float py = point.y - center.y;
-    float pz = point.z - center.z;
-
-        ret.x = Axx*px + Axy*py + Axz*pz;
-        ret.y = Ayx*px + Ayy*py + Ayz*pz;
-        ret.z = Azx*px + Azy*py + Azz*pz;
-	return ret;
-}
-
-float clamp(float max, float min, float number)
-{
-	if(number < min)
-	{
-		return min;
-	}
-	if(number > max)
-	{
-		return max;
-	}
-	return number;
-}
-
-//roll pitch yaw
-Vector3 rotate3DPointClamp(Vector3 center, Vector3 rotation, Vector3 point, float min, float max)
-{
-    float cosa = cos(rotation.y);
-    float sina = sin(rotation.y);
-
-    float cosb = cos(rotation.x);
-    float sinb = sin(rotation.x);
-
-    float cosc = cos(rotation.z);
-    float sinc = sin(rotation.z);
-
-    float Axx = cosa*cosb;
-    float Axy = cosa*sinb*sinc - sina*cosc;
-    float Axz = cosa*sinb*cosc + sina*sinc;
-
-    float Ayx = sina*cosb;
-    float Ayy = sina*sinb*sinc + cosa*cosc;
-    float Ayz = sina*sinb*cosc - cosa*sinc;
-
-    float Azx = -sinb;
-    float Azy = cosb*sinc;
-    float Azz = cosb*cosc;
-
-	Vector3 ret;
-
-    float px = point.x - center.x;
-    float py = point.y - center.y;
-    float pz = point.z - center.z;
-
-        ret.x = Axx*px + Axy*py + Axz*pz;
-        ret.y = Ayx*px + Ayy*py + Ayz*pz;
-        ret.z = Azx*px + Azy*py + Azz*pz;
-		ret.x = clamp(max, min, ret.x);
-		ret.y = clamp(max, min, ret.y);
-		ret.z = clamp(max, min, ret.z);
-	return ret;
-}
-/*
-This is the approximation of 1 degree
-*/
-#define APPROX_DEGREE_MULT (1.57 / 90)
-//THE CURRENT APROXIMATE VALUE IS: [90 = 1.57f], 1.57 / 90 = ~0.0174
-Vector3 rotatePointVector3Degrees(Vector3 center, Vector3 rotation, Vector3 points)
-{
-	Vector3 ret = rotate3DPoint(center, points, scaleVector(rotation, APPROX_DEGREE_MULT));
-	// ret = scaleVector(ret, 0.0174);
-	return ret;
-
-}
-
-Vector3 rotatePointVector3(Vector3 center, Vector3 rotation_in_degrees, Vector3 points)
-{
-
-	Vector3 ret = rotate3DPoint(center, points, rotation_in_degrees);
-	return ret;
-
-}
-
-Vector3 clampVector(Vector3 vector, float max, float min)
-{
-	return (Vector3){clamp(max, min, vector.x), clamp(max, min, vector.y), clamp(max, min, vector.z)};
-}
+#include "Vector3Operations.h"
+#include "Rotation.h"
+#include "MathmaticalOperations.h"
 
 typedef struct PhysicsObject
 {
@@ -181,26 +23,6 @@ PhysicsObject;
 Color getPhysObjIDColour(PhysicsObject* physobj)
 {
 	return (Color){255 - physobj->ID * 3, 255 - physobj->ID * 2, 255 - physobj->ID * 4, 255};
-}
-
-Vector3 addVectors(Vector3 a, Vector3 b)
-{
-	return (Vector3){a.x + b.x, a.y + b.y, a.z + b.z};
-}
-
-Vector3 multiplyVectors(Vector3 a, Vector3 b)
-{
-	return (Vector3){a.x * b.x, a.y * b.y, a.z * b.z};
-}
-
-Vector3 invertVector(Vector3 a)
-{
-	return (Vector3){-a.x, -a.y, -a.z};
-}
-
-Vector3 findMidPoint(Vector3 a, Vector3 b)
-{
-	return (Vector3){(a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2};
 }
 
 void renderPhysObjPosition(PhysicsObject* physobj)
@@ -249,15 +71,6 @@ PhysicsObject newPhysicsObject(Vector3 pos, Vector3 direction, float weight)
 	new_physobj_id++;
 	return (PhysicsObject){pos, direction, new_physobj_id, weight, (Vector3){0, 0, 0}};
 }
-
-// PhysicsObject allocateNewPhysicsObject(Vector3 pos, Vector3 direction)
-// {
-// }
-
-float subtractPercentageFromNumber(float number, float percent)
-{
-	return (100 - percent) / 100;
-}
 void updatePhysicsObjectWeight(PhysicsObject* physobj)
 {
 	physobj->direction.y -= (physobj->weight) / 10;
@@ -268,23 +81,19 @@ void updatePhysicsObjectDrag(PhysicsObject* physobj, float percent_lost)
 	physobj->direction.y *= subtractPercentageFromNumber(physobj->direction.y, percent_lost);
 	physobj->direction.z *= subtractPercentageFromNumber(physobj->direction.z, percent_lost);
 }
-
 void updatePhysicsObjectPosition(PhysicsObject* physobj)
 {
 	physobj->position = addVectors(physobj->position, physobj->direction);
 }
-
 void bouncePhysicsObject(PhysicsObject* physobj, Vector3 direction)
 {
 	physobj->direction = multiplyVectors(physobj->direction, direction);
 }
-
 //decay here is the amount that that the object's "bounce energy" will diminish.
 void bouncePhysicsObjectWithDecay(PhysicsObject* physobj, Vector3 direction, float decay_amount)
 {
 	physobj->direction = multiplyVectors(physobj->direction, direction);
 }
-
 void renderRoom(int dimensions)
 {
 	// Vector3 points[8] =
@@ -386,7 +195,7 @@ int PhysicsDemo()
 				{
 					// ChirpSegment test_chirp = (ChirpSegment){600, 10};
 					// playChirp(&test_chirp);
-					bouncePhysicsObject(&test_obj, (Vector3){1, -1, 1});
+					bouncePhysicsObject(&test_obj, (Vector3){1, -.9, 1});
 				}
 				if(test_obj.position.x < -bounce_boundary || test_obj.position.x > bounce_boundary)
 				{
